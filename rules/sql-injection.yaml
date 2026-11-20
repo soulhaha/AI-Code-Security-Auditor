@@ -1,0 +1,95 @@
+# Semgrep 规则集：SQL 注入（CWE-89 / OWASP A03:2021）
+# 用法: semgrep --config rules/sql-injection.yaml samples/
+# 说明: 规则只覆盖「字符串拼接/插值后直接执行」这一最常见模式；
+#      跨语句的污点传播（先赋值再执行）由 v0.2 的 taint 模式补充。
+rules:
+  - id: python-sqli-fstring-execute
+    languages:
+      - python
+    severity: ERROR
+    message: >-
+      SQL 语句通过 f-string 插值后执行，外部输入可改变查询结构，存在 SQL 注入（CWE-89）。
+      建议改为参数化查询，例如 cur.execute("SELECT ... WHERE name = ?", (name,))。
+    metadata:
+      category: security
+      cwe: "CWE-89"
+      owasp: "A03:2021 - Injection"
+      confidence: HIGH
+      tags:
+        - sql-injection
+        - python
+    patterns:
+      - pattern-either:
+          - pattern: $CUR.execute(f"...", ...)
+          - pattern: $CUR.execute(f"...")
+          - pattern: $CUR.executemany(f"...", ...)
+
+  - id: python-sqli-concat-execute
+    languages:
+      - python
+    severity: ERROR
+    message: >-
+      SQL 语句由字符串拼接/格式化（+、%、str.format）构造后执行，存在 SQL 注入（CWE-89）。
+      建议改为参数化查询或 ORM 绑定参数。
+    metadata:
+      category: security
+      cwe: "CWE-89"
+      owasp: "A03:2021 - Injection"
+      confidence: HIGH
+      tags:
+        - sql-injection
+        - python
+    patterns:
+      - pattern-either:
+          - pattern: $CUR.execute("..." + $X, ...)
+          - pattern: $CUR.execute("..." + $X)
+          - pattern: $CUR.execute("..." % $X, ...)
+          - pattern: $CUR.execute("..." % $X)
+          - pattern: $CUR.execute("...".format(...), ...)
+          - pattern: $CUR.execute("...".format(...))
+
+  - id: java-sqli-statement-concat
+    languages:
+      - java
+    severity: ERROR
+    message: >-
+      SQL 语句由字符串拼接后交给 Statement 执行，存在 SQL 注入（CWE-89）。
+      建议改用 PreparedStatement + 占位符绑定参数。
+    metadata:
+      category: security
+      cwe: "CWE-89"
+      owasp: "A03:2021 - Injection"
+      confidence: HIGH
+      tags:
+        - sql-injection
+        - java
+    patterns:
+      - pattern-either:
+          - pattern: $ST.executeQuery("..." + $X)
+          - pattern: $ST.executeQuery("..." + $X + ...)
+          - pattern: $ST.executeUpdate("..." + $X)
+          - pattern: $ST.execute("..." + $X)
+          - pattern: $ST.executeQuery($QUERY + $X)
+          - pattern: $ST.executeUpdate($QUERY + $X)
+          - pattern: $ST.execute($QUERY + $X)
+
+  - id: java-sqli-string-format
+    languages:
+      - java
+    severity: ERROR
+    message: >-
+      SQL 语句通过 String.format 拼接参数后执行，存在 SQL 注入（CWE-89）。
+      建议改用 PreparedStatement + 占位符绑定参数。
+    metadata:
+      category: security
+      cwe: "CWE-89"
+      owasp: "A03:2021 - Injection"
+      confidence: HIGH
+      tags:
+        - sql-injection
+        - java
+    patterns:
+      - pattern-either:
+          - pattern: $ST.executeQuery(String.format(...))
+          - pattern: $ST.executeUpdate(String.format(...))
+          - pattern: $ST.execute(String.format(...))
