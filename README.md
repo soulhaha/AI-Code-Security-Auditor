@@ -27,7 +27,7 @@
 ├── docs/
 │   ├── ai-fp-filter-agent.md    # AI 误报过滤 Agent 设计文档
 │   └── roadmap.md               # 路线图与开发计划
-├── .github/workflows/ci.yml     # 规则校验 + 样本回归
+├── scripts/check.sh             # 本地回归：规则校验 + 样本扫描 + 上下文生成
 └── CHANGELOG.md
 ```
 
@@ -46,6 +46,9 @@ python3 core/context_extractor.py samples/python/vuln_sqli.py 18 --radius 8
 
 # 4) 批量：把 Semgrep 结果整体转成上下文
 python3 core/context_extractor.py --semgrep-json semgrep.json --format markdown
+
+# 5) 一键回归（校验规则 + 扫描样本 + 断言 6 条命中）
+bash scripts/check.sh
 ```
 
 输出示例（节选）：

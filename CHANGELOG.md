@@ -9,6 +9,6 @@
 - 新增样本：`samples/python/vuln_sqli.py`（4 处漏洞 + 1 处正例）、`samples/java/VulnSqli.java`（3 处漏洞 + 1 处正例）
 - 新增 `docs/ai-fp-filter-agent.md`：误报过滤 Agent 设计文档（契约、Prompt、评估、成本、隐私）
 - 新增 `docs/roadmap.md`：v0.1 → v1.0 路线图
-- 新增 CI：规则校验 + 样本回归 + 上下文生成
+- 新增 `scripts/check.sh`：本地一键回归（规则校验 + 样本扫描 + 上下文断言）
 
 已知缺口：变量间接传递的注入（先赋值再执行）未覆盖，将在 v0.2 用 taint 规则补齐。
